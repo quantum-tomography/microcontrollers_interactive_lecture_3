@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU & Memory Bus Interactive Simulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        bus: {
+                            address: '#3b82f6', // blue-500
+                            data: '#f97316',    // orange-500
+                            control: '#10b981', // emerald-500
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animated Bus Lines styling */
+        .bus-line {
+            transition: all 0.3s ease;
+        }
+        
+        .pulse-particle {
+            animation: moveParticle 1.5s linear infinite;
+        }
+
+        .pulse-particle-reverse {
+            animation: moveParticleReverse 1.5s linear infinite;
+        }
+
+        @keyframes moveParticle {
+            0% { offset-distance: 0%; opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { offset-distance: 100%; opacity: 0.2; }
+        }
+
+        @keyframes moveParticleReverse {
+            0% { offset-distance: 100%; opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { offset-distance: 0%; opacity: 0.2; }
+        }
+
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .glow-address {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+        .glow-data {
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
+        }
+        .glow-control {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Header / Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-cyan-400">
+                <i data-lucide="cpu" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-wide text-slate-100 flex items-center gap-2">
+                    Microprocessor Architecture <span class="text-xs font-normal px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">Interactive Lecture</span>
+                </h1>
+                <p class="text-xs text-slate-400">CPU & Memory Bus Systems • Връзка между паметта и централния процесор</p>
+            </div>
+        </div>
+
+        <!-- Language & Concept Quick Links -->
+        <div class="flex items-center space-x-2 text-xs font-mono">
+            <span class="text-slate-400">Key Concepts:</span>
+            <span class="px-2 py-1 rounded bg-blue-950/60 text-blue-400 border border-blue-800/50">Address Bus (0x00-0x0F)</span>
+            <span class="px-2 py-1 rounded bg-orange-950/60 text-orange-400 border border-orange-800/50">Data Bus (8-bit)</span>
+            <span class="px-2 py-1 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/50">R/W Line</span>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- LEFT COLUMN: Control Panel & Interactive Controls (4 cols) -->
+        <section class="lg:col-span-4 flex flex-col gap-5">
+            
+            <!-- Control Panel Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <h2 class="font-semibold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+                        Execution Controller
+                    </h2>
+                    <span id="cycle-badge" class="text-xs px-2 py-0.5 rounded-full font-mono bg-slate-800 text-slate-400 border border-slate-700">
+                        IDLE
+                    </span>
+                </div>
+
+                <!-- Form Controls -->
+                <div class="space-y-4">
+                    <!-- Target Address Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
+                            <span>Target Address (Адрес)</span>
+                            <span class="text-blue-400 font-mono" id="selected-hex-display">0x02</span>
+                        </label>
+                        <div class="grid grid-cols-4 gap-2 font-mono text-xs">
+                            <select id="address-select" class="col-span-4 bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                <!-- Generated JS options -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Operation Mode Toggle (R/W) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                            Operation Mode (Сигнал R/W)
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btn-mode-read" onclick="setMode('READ')" 
+                                class="flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm transition-all bg-emerald-950/40 border-emerald-600/60 text-emerald-300 shadow-lg shadow-emerald-950/50">
+                                <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+                                READ (R/W=1)
+                            </button>
+                            <button id="btn-mode-write" onclick="setMode('WRITE')" 
+                                class="flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm transition-all bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700">
+                                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                                WRITE (R/W=0)
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1.5 font-mono">
+                            <span id="rw-desc" class="text-emerald-400">R/W=1: Data flows Memory → CPU (Четене)</span>
+                        </p>
+                    </div>
+
+                    <!-- Write Data Input (Active only in WRITE mode) -->
+                    <div id="write-data-container" class="opacity-40 pointer-events-none transition-all">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
+                            <span>Data to Write (Данни за запис)</span>
+                            <span id="data-preview" class="text-orange-400 font-mono">0xA5 (10100101)</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase font-mono">HEX Value</span>
+                                <input type="text" id="hex-input" maxlength="2" value="A5" oninput="handleHexInput(this.value)"
+                                    class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono text-sm focus:outline-none focus:border-orange-500 uppercase">
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase font-mono">8-bit Binary</span>
+                                <input type="text" id="bin-input" maxlength="8" value="10100101" oninput="handleBinInput(this.value)"
+                                    class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono text-sm focus:outline-none focus:border-orange-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="pt-2 flex flex-col gap-2">
+                        <button id="btn-execute" onclick="runFullCycle()" 
+                            class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-lg shadow-lg shadow-cyan-950/50 flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                            Execute Bus Cycle (Авто)
+                        </button>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btn-step" onclick="nextStep()" 
+                                class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg border border-slate-700 text-xs flex items-center justify-center gap-1.5 transition-all">
+                                <i data-lucide="step-forward" class="w-3.5 h-3.5"></i>
+                                Step-by-Step
+                            </button>
+                            <button id="btn-reset" onclick="resetCycle()" 
+                                class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg border border-slate-700 text-xs flex items-center justify-center gap-1.5 transition-all">
+                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                Reset State
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Bus Status Dashboard -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+                    Bus Signal Monitor (Магистрален статус)
+                </h3>
+                <div class="space-y-2.5 font-mono text-xs">
+                    <!-- Address Bus Line -->
+                    <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-blue-900/40">
+                        <span class="text-blue-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                            Address Bus
+                        </span>
+                        <span id="dash-address" class="text-slate-200 font-bold">0x02 (00000010)</span>
+                    </div>
+
+                    <!-- Control Signal Line -->
+                    <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-emerald-900/40">
+                        <span class="text-emerald-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Control R/W
+                        </span>
+                        <span id="dash-rw" class="text-emerald-300 font-bold">1 (READ Mode)</span>
+                    </div>
+
+                    <!-- Data Bus Line -->
+                    <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-orange-900/40">
+                        <span class="text-orange-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                            Data Bus
+                        </span>
+                        <span id="dash-data" class="text-slate-200 font-bold">0x42 (01000010)</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: Visual Simulation Canvas & Textbooks Reference (8 cols) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- VISUAL ARCHITECTURE INTERACTIVE DIAGRAM -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+                
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+                        Hardware Interconnect Diagram (Фиг. 1.3)
+                    </span>
+                    <span class="text-xs text-slate-500 font-mono">16-Cell Address Space (0x00 - 0x0F)</span>
+                </div>
+
+                <!-- Simulation Interactive Workspace -->
+                <div class="relative w-full min-h-[380px] bg-slate-950 border border-slate-800 rounded-xl p-4 flex justify-between items-center gap-2 overflow-x-auto">
+                    
+                    <!-- 1. CENTRAL PROCESSOR (CPU) BOX -->
+                    <div id="cpu-box" class="w-44 flex-shrink-0 bg-slate-900 border-2 border-slate-700 rounded-xl p-3 flex flex-col justify-between h-[320px] transition-all relative z-10 shadow-lg">
+                        <div class="border-b border-slate-800 pb-2 text-center">
+                            <span class="text-xs font-bold tracking-wider text-slate-200 block uppercase">Централен</span>
+                            <span class="text-xs font-bold tracking-wider text-cyan-400 block uppercase">Процесор (CPU)</span>
+                        </div>
+
+                        <!-- Internal Registers View -->
+                        <div class="space-y-2 text-[11px] font-mono">
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <span class="text-slate-500 block text-[9px]">ADDRESS REG (MAR)</span>
+                                <span id="cpu-mar" class="text-blue-400 font-bold">0x02</span>
+                            </div>
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <span class="text-slate-500 block text-[9px]">DATA REG (MDR)</span>
+                                <span id="cpu-mdr" class="text-orange-400 font-bold">0x00</span>
+                            </div>
+                            <div class="bg-slate-950 p-1.5 rounded border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-500 text-[9px]">R/W BUFFER</span>
+                                <span id="cpu-rw-flag" class="text-emerald-400 font-bold">1</span>
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] text-slate-500 text-center border-t border-slate-800 pt-1.5">
+                            Control & Arithmetic Logic
+                        </div>
+                    </div>
+
+                    <!-- 2. BUS INTERCONNECT SVG ANIMATION OVERLAY -->
+                    <div class="flex-1 min-w-[200px] h-[320px] relative">
+                        <svg class="w-full h-full overflow-visible" id="bus-svg">
+                            <!-- Defs for arrowheads and gradients -->
+                            <defs>
+                                <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6"/>
+                                </marker>
+                                <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+                                </marker>
+                                <marker id="arrow-orange-right" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#f97316"/>
+                                </marker>
+                                <marker id="arrow-orange-left" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 10 0 L 0 5 L 10 10 z" fill="#f97316"/>
+                                </marker>
+                            </defs>
+
+                            <!-- DATA BUS (Top) - Bidirectional -->
+                            <g id="group-data-bus">
+                                <line x1="0" y1="80" x2="100%" y2="80" stroke="#475569" stroke-width="8" stroke-linecap="round" />
+                                <line id="line-data-active" x1="0" y1="80" x2="100%" y2="80" stroke="#f97316" stroke-width="4" stroke-dasharray="8 6" class="opacity-40" />
+                                <text x="50%" y="65" fill="#f97316" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">
+                                    Магистрала за данни (Data Bus - 8 bit)
+                                </text>
+                            </g>
+
+                            <!-- ADDRESS BUS (Middle) - Unidirectional CPU -> RAM -->
+                            <g id="group-address-bus">
+                                <line x1="0" y1="160" x2="98%" y2="160" stroke="#475569" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+                                <line id="line-address-active" x1="0" y1="160" x2="98%" y2="160" stroke="#3b82f6" stroke-width="4" stroke-dasharray="8 6" class="opacity-40" />
+                                <text x="50%" y="145" fill="#3b82f6" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">
+                                    Адресна магистрала (Address Bus - One Way)
+                                </text>
+                            </g>
+
+                            <!-- CONTROL LINE R/W (Bottom) - Single Line CPU -> RAM -->
+                            <g id="group-control-bus">
+                                <line x1="0" y1="240" x2="98%" y2="240" stroke="#475569" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-emerald)" />
+                                <line id="line-control-active" x1="0" y1="240" x2="98%" y2="240" stroke="#10b981" stroke-width="2" stroke-dasharray="6 4" class="opacity-40" />
+                                <text x="50%" y="225" fill="#10b981" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">
+                                    Сигнал R/W (Read / Write Line)
+                                </text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- 3. MEMORY MODULE (RAM) BOX -->
+                    <div id="ram-box" class="w-56 flex-shrink-0 bg-slate-900 border-2 border-slate-700 rounded-xl p-3 flex flex-col h-[320px] transition-all relative z-10 shadow-lg">
+                        <div class="border-b border-slate-800 pb-2 text-center mb-2">
+                            <span class="text-xs font-bold tracking-wider text-slate-200 block uppercase">Памет</span>
+                            <span class="text-xs font-bold tracking-wider text-emerald-400 block uppercase">(Memory Cells)</span>
+                        </div>
+
+                        <!-- Scrollable Memory Cells -->
+                        <div id="memory-cells-container" class="flex-1 overflow-y-auto space-y-1.5 pr-1 font-mono text-xs">
+                            <!-- Memory cells inserted by JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Step Explanation Banner -->
+                <div class="mt-4 bg-slate-950 border border-slate-800 rounded-lg p-3.5 flex items-start gap-3">
+                    <div id="step-icon-container" class="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 mt-0.5">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 id="step-title" class="text-sm font-bold text-slate-200">Step 0: Ready to Initiate Cycle</h4>
+                            <span id="step-count" class="text-[11px] font-mono text-slate-400">Step 0 / 4</span>
+                        </div>
+                        <p id="step-description" class="text-xs text-slate-400 leading-relaxed">
+                            Select a target address (0x00 to 0x0F) and mode (READ or WRITE), then click <span class="text-cyan-400 font-semibold">Execute</span> or <span class="text-slate-200 font-semibold">Step-by-Step</span> to observe the data transfer protocol between CPU and RAM.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ACADEMIC THEORY & TEXTBOOK EXPLANATION CARD -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+                <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+                    <i data-lucide="book-open" class="w-4 h-4 text-cyan-400"></i>
+                    Theoretical Foundations (Теоретични Основи)
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <!-- Address Bus Theory -->
+                    <div class="p-3 bg-slate-950/60 rounded-lg border border-blue-900/30">
+                        <h4 class="font-bold text-blue-400 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                            Адресна магистрала
+                        </h4>
+                        <p class="text-slate-400 leading-relaxed">
+                            <strong>Однопосочна (One-way):</strong> Предава адресната двоична дума от CPU към паметта. Определя с коя конкретна клетка (от 0x00 до 0x0F) ще се извърши комуникация.
+                        </p>
+                    </div>
+
+                    <!-- Control Signal Theory -->
+                    <div class="p-3 bg-slate-950/60 rounded-lg border border-emerald-900/30">
+                        <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            Управляващ сигнал R/W
+                        </h4>
+                        <p class="text-slate-400 leading-relaxed">
+                            <strong>Еднопроводна линия:</strong>
+                            <br>• <strong>R/W = 1 (High):</strong> Четене (Read)
+                            <br>• <strong>R/W = 0 (Low):</strong> Запис (Write)
+                        </p>
+                    </div>
+
+                    <!-- Data Bus Theory -->
+                    <div class="p-3 bg-slate-950/60 rounded-lg border border-orange-900/30">
+                        <h4 class="font-bold text-orange-400 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                            Магистрала за данни
+                        </h4>
+                        <p class="text-slate-400 leading-relaxed">
+                            <strong>Двупосочна (Bidirectional):</strong> Пренася байта информация от паметта към CPU (при четене) или от CPU към паметта (при запис).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-900/50 py-3 px-6 text-center text-xs text-slate-500">
+        Interactive Microprocessor Systems Courseware • Based on Core CPU/RAM Interconnect Principles
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // State Management
+        const TOTAL_CELLS = 16;
+        let memory = Array(TOTAL_CELLS).fill(0).map((_, i) => ({
+            address: i,
+            hexAddress: '0x' + i.toString(16).padStart(2, '0').toUpperCase(),
+            value: Math.floor(Math.random() * 256) // Random initial values
+        }));
+
+        let currentStep = 0;
+        let selectedAddress = 2; // Default 0x02
+        let currentMode = 'READ'; // READ (1) or WRITE (0)
+        let writeDataValue = 0xA5; // Default write value
+        let isAnimating = false;
+        let animationTimer = null;
+
+        // DOM Element References
+        const addressSelect = document.getElementById('address-select');
+        const memoryContainer = document.getElementById('memory-cells-container');
+        const cpuMar = document.getElementById('cpu-mar');
+        const cpuMdr = document.getElementById('cpu-mdr');
+        const cpuRwFlag = document.getElementById('cpu-rw-flag');
+        
+        const dashAddress = document.getElementById('dash-address');
+        const dashRw = document.getElementById('dash-rw');
+        const dashData = document.getElementById('dash-data');
+
+        const stepTitle = document.getElementById('step-title');
+        const stepDescription = document.getElementById('step-description');
+        const stepCount = document.getElementById('step-count');
+        const stepIconContainer = document.getElementById('step-icon-container');
+
+        const hexInput = document.getElementById('hex-input');
+        const binInput = document.getElementById('bin-input');
+        const dataPreview = document.getElementById('data-preview');
+        const selectedHexDisplay = document.getElementById('selected-hex-display');
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            initAddressSelect();
+            renderMemoryCells();
+            updateUI();
+            lucide.createIcons();
+        });
+
+        // Initialize Target Address Dropdown
+        function initAddressSelect() {
+            addressSelect.innerHTML = '';
+            memory.forEach(cell => {
+                const opt = document.createElement('option');
+                opt.value = cell.address;
+                opt.textContent = `${cell.hexAddress} (Запомняща клетка ${cell.address})`;
+                if(cell.address === selectedAddress) opt.selected = true;
+                addressSelect.appendChild(opt);
+            });
+
+            addressSelect.addEventListener('change', (e) => {
+                selectedAddress = parseInt(e.target.value, 10);
+                selectedHexDisplay.textContent = formatHex(selectedAddress);
+                resetCycle();
+            });
+        }
+
+        // Render RAM Cells Table
+        function renderMemoryCells() {
+            memoryContainer.innerHTML = '';
+            memory.forEach((cell) => {
+                const cellEl = document.createElement('div');
+                cellEl.id = `ram-cell-${cell.address}`;
+                const isSelected = cell.address === selectedAddress;
+                
+                cellEl.className = `p-2 rounded border flex justify-between items-center transition-all ${
+                    isSelected 
+                        ? 'bg-blue-950/60 border-blue-500 text-slate-100 shadow-md' 
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                }`;
+
+                cellEl.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-slate-500">${cell.hexAddress}</span>
+                        <span class="text-[11px] font-mono font-medium">Cell ${cell.address}</span>
+                    </div>
+                    <span class="font-mono text-cyan-400 font-semibold" id="cell-val-${cell.address}">
+                        ${formatHex(cell.value)}
+                    </span>
+                `;
+                cellEl.onclick = () => {
+                    addressSelect.value = cell.address;
+                    selectedAddress = cell.address;
+                    selectedHexDisplay.textContent = formatHex(selectedAddress);
+                    resetCycle();
+                };
+                memoryContainer.appendChild(cellEl);
+            });
+        }
+
+        // Mode Switching (READ / WRITE)
+        function setMode(mode) {
+            currentMode = mode;
+            const btnRead = document.getElementById('btn-mode-read');
+            const btnWrite = document.getElementById('btn-mode-write');
+            const writeContainer = document.getElementById('write-data-container');
+            const rwDesc = document.getElementById('rw-desc');
+
+            if (mode === 'READ') {
+                btnRead.className = "flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm transition-all bg-emerald-950/40 border-emerald-600/60 text-emerald-300 shadow-lg shadow-emerald-950/50";
+                btnWrite.className = "flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm transition-all bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700";
+                writeContainer.classList.add('opacity-40', 'pointer-events-none');
+                rwDesc.className = "text-emerald-400";
+                rwDesc.textContent = "R/W=1: Data flows Memory → CPU (Четене)";
+            } else {
+                btnWrite.className = "flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm transition-all bg-orange-950/40 border-orange-600/60 text-orange-300 shadow-lg shadow-orange-950/50";
+                btnRead.className = "flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm transition-all bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700";
+                writeContainer.classList.remove('opacity-40', 'pointer-events-none');
+                rwDesc.className = "text-orange-400";
+                rwDesc.textContent = "R/W=0: Data flows CPU → Memory (Запис)";
+            }
+            resetCycle();
+        }
+
+        // Input Sync Functions
+        function handleHexInput(val) {
+            let clean = val.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+            hexInput.value = clean;
+            if (clean.length > 0) {
+                let num = parseInt(clean, 16);
+                if (!isNaN(num)) {
+                    writeDataValue = num;
+                    binInput.value = num.toString(2).padStart(8, '0');
+                    updateDataPreview();
+                }
+            }
+        }
+
+        function handleBinInput(val) {
+            let clean = val.replace(/[^01]/g, '');
+            binInput.value = clean;
+            if (clean.length > 0) {
+                let num = parseInt(clean, 2);
+                if (!isNaN(num)) {
+                    writeDataValue = num;
+                    hexInput.value = num.toString(16).toUpperCase().padStart(2, '0');
+                    updateDataPreview();
+                }
+            }
+        }
+
+        function updateDataPreview() {
+            dataPreview.textContent = `${formatHex(writeDataValue)} (${writeDataValue.toString(2).padStart(8, '0')})`;
+        }
+
+        // Format Utilities
+        function formatHex(val) {
+            return '0x' + val.toString(16).padStart(2, '0').toUpperCase();
+        }
+        function formatBin(val) {
+            return val.toString(2).padStart(8, '0');
+        }
+
+        // Step Execution Engine
+        function nextStep() {
+            if (currentStep >= 4) {
+                resetCycle();
+                return;
+            }
+            currentStep++;
+            applyStep(currentStep);
+        }
+
+        function resetCycle() {
+            if (animationTimer) clearInterval(animationTimer);
+            isAnimating = false;
+            currentStep = 0;
+            applyStep(0);
+        }
+
+        function runFullCycle() {
+            resetCycle();
+            isAnimating = true;
+            document.getElementById('cycle-badge').textContent = "RUNNING";
+            document.getElementById('cycle-badge').className = "text-xs px-2 py-0.5 rounded-full font-mono bg-cyan-950 text-cyan-300 border border-cyan-800 animate-pulse";
+
+            animationTimer = setInterval(() => {
+                if (currentStep < 4) {
+                    currentStep++;
+                    applyStep(currentStep);
+                } else {
+                    clearInterval(animationTimer);
+                    isAnimating = false;
+                    document.getElementById('cycle-badge').textContent = "COMPLETED";
+                    document.getElementById('cycle-badge').className = "text-xs px-2 py-0.5 rounded-full font-mono bg-emerald-950 text-emerald-300 border border-emerald-800";
+                }
+            }, 1600);
+        }
+
+        // Step Definitions & Animation Updates
+        function applyStep(step) {
+            stepCount.textContent = `Step ${step} / 4`;
+            
+            // Visual line elements
+            const lineAddr = document.getElementById('line-address-active');
+            const lineCtrl = document.getElementById('line-control-active');
+            const lineData = document.getElementById('line-data-active');
+
+            const cpuBox = document.getElementById('cpu-box');
+            const ramBox = document.getElementById('ram-box');
+
+            // Reset highlighted states
+            cpuBox.classList.remove('glow-address', 'glow-data', 'glow-control');
+            ramBox.classList.remove('glow-address', 'glow-data', 'glow-control');
+            lineAddr.classList.remove('opacity-100', 'pulse-particle');
+            lineCtrl.classList.remove('opacity-100', 'pulse-particle');
+            lineData.classList.remove('opacity-100', 'pulse-particle', 'pulse-particle-reverse');
+
+            renderMemoryCells();
+
+            if (step === 0) {
+                // Idle State
+                stepTitle.textContent = "Step 0: Ready / Standard Bus State";
+                stepDescription.innerHTML = "System initialized. Select target address and mode, then trigger the bus cycle to observe communication.";
+                stepIconContainer.className = "p-2 rounded bg-slate-800 text-slate-400 border border-slate-700";
+                stepIconContainer.innerHTML = `<i data-lucide="power" class="w-5 h-5"></i>`;
+
+                cpuMar.textContent = formatHex(selectedAddress);
+                cpuMdr.textContent = currentMode === 'WRITE' ? formatHex(writeDataValue) : "0x--";
+                cpuRwFlag.textContent = currentMode === 'READ' ? "1" : "0";
+
+                dashAddress.textContent = `${formatHex(selectedAddress)} (${formatBin(selectedAddress)})`;
+                dashRw.textContent = currentMode === 'READ' ? "1 (READ)" : "0 (WRITE)";
+                dashData.textContent = "IDLE (0x00)";
+            } 
+            else if (step === 1) {
+                // Step 1: Address Bus Setup
+                stepTitle.textContent = "Step 1: Address Bus Setup (Адресиране)";
+                stepDescription.innerHTML = `CPU places the target memory cell address <strong class="text-blue-400">${formatHex(selectedAddress)}</strong> on the <strong>Address Bus</strong>. The memory decoder prepares to activate Cell ${selectedAddress}.`;
+                stepIconContainer.className = "p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30";
+                stepIconContainer.innerHTML = `<i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+
+                lineAddr.classList.add('opacity-100');
+                cpuBox.classList.add('glow-address');
+
+                dashAddress.textContent = `${formatHex(selectedAddress)} (${formatBin(selectedAddress)}) [ACTIVE]`;
+            } 
+            else if (step === 2) {
+                // Step 2: Control Line Assertion
+                lineAddr.classList.add('opacity-100');
+                lineCtrl.classList.add('opacity-100');
+                
+                const rwVal = currentMode === 'READ' ? '1' : '0';
+                stepTitle.textContent = `Step 2: Control Signal Assertion (R/W = ${rwVal})`;
+                
+                if (currentMode === 'READ') {
+                    stepDescription.innerHTML = `CPU asserts <strong class="text-emerald-400">R/W = 1 (HIGH)</strong> on the Control Line. This commands the memory unit to <strong>READ</strong> data from Cell ${selectedAddress}.`;
+                } else {
+                    stepDescription.innerHTML = `CPU asserts <strong class="text-orange-400">R/W = 0 (LOW)</strong> on the Control Line. This commands the memory unit to prepare for <strong>WRITING</strong> into Cell ${selectedAddress}.`;
+                }
+
+                stepIconContainer.className = "p-2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+                stepIconContainer.innerHTML = `<i data-lucide="toggle-right" class="w-5 h-5"></i>`;
+
+                dashRw.textContent = `${rwVal} (${currentMode} Asserted)`;
+            } 
+            else if (step === 3) {
+                // Step 3: Data Transfer
+                lineAddr.classList.add('opacity-100');
+                lineCtrl.classList.add('opacity-100');
+                lineData.classList.add('opacity-100');
+
+                const targetCell = memory.find(c => c.address === selectedAddress);
+
+                if (currentMode === 'READ') {
+                    const dataVal = targetCell.value;
+                    stepTitle.textContent = "Step 3: Data Transfer (Memory → CPU)";
+                    stepDescription.innerHTML = `Data byte <strong class="text-orange-400">${formatHex(dataVal)}</strong> flows out of Memory Cell ${selectedAddress} onto the <strong>Data Bus</strong> towards the CPU.`;
+                    dashData.textContent = `${formatHex(dataVal)} (RAM → CPU)`;
+                } else {
+                    stepTitle.textContent = "Step 3: Data Transfer (CPU → Memory)";
+                    stepDescription.innerHTML = `CPU places byte <strong class="text-orange-400">${formatHex(writeDataValue)}</strong> onto the <strong>Data Bus</strong> traveling towards Memory Cell ${selectedAddress}.`;
+                    dashData.textContent = `${formatHex(writeDataValue)} (CPU → RAM)`;
+                }
+
+                stepIconContainer.className = "p-2 rounded bg-orange-500/10 text-orange-400 border border-orange-500/30";
+                stepIconContainer.innerHTML = `<i data-lucide="arrow-left-right" class="w-5 h-5"></i>`;
+            } 
+            else if (step === 4) {
+                // Step 4: Latched / Latch Complete
+                lineAddr.classList.add('opacity-100');
+                lineCtrl.classList.add('opacity-100');
+
+                const targetCell = memory.find(c => c.address === selectedAddress);
+
+                if (currentMode === 'READ') {
+                    const dataVal = targetCell.value;
+                    cpuMdr.textContent = formatHex(dataVal);
+                    stepTitle.textContent = "Step 4: Cycle Complete (Data Latched in CPU Register)";
+                    stepDescription.innerHTML = `CPU successfully stores byte <strong class="text-emerald-400">${formatHex(dataVal)}</strong> into its internal Data Register (MDR). Read cycle complete!`;
+                } else {
+                    targetCell.value = writeDataValue;
+                    renderMemoryCells();
+                    stepTitle.textContent = "Step 4: Cycle Complete (Data Written to RAM)";
+                    stepDescription.innerHTML = `Memory cell ${selectedAddress} (${targetCell.hexAddress}) latched new byte value <strong class="text-emerald-400">${formatHex(writeDataValue)}</strong>. Write cycle complete!`;
+                }
+
+                // Highlight target cell
+                const cellEl = document.getElementById(`ram-cell-${selectedAddress}`);
+                if (cellEl) {
+                    cellEl.className = "p-2 rounded border flex justify-between items-center bg-emerald-950/80 border-emerald-500 text-slate-100 shadow-lg scale-105 transition-all";
+                }
+
+                stepIconContainer.className = "p-2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+                stepIconContainer.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i>`;
+            }
+
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
