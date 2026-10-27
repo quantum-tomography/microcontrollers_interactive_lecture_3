@@ -109,15 +109,24 @@
         </div>
 
         <!-- Slide Switcher Navigation -->
-        <div class="flex items-center space-x-2 bg-slate-950 p-1.5 rounded-lg border border-slate-800">
-            <button onclick="switchSlide(1)" id="tab-slide-1" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-cyan-600 text-white shadow">
-                Slide 1: CPU & Memory Bus
+        <div class="flex items-center space-x-1.5 bg-slate-950 p-1.5 rounded-lg border border-slate-800 flex-wrap">
+            <button onclick="switchSlide(1)" id="tab-slide-1" class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all bg-cyan-600 text-white shadow">
+                Slide 1: CPU & Bus
             </button>
-            <button onclick="switchSlide(2)" id="tab-slide-2" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900">
-                Slide 2: Access Time & Capacity
+            <button onclick="switchSlide(2)" id="tab-slide-2" class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                Slide 2: Access & Capacity
             </button>
-            <button onclick="switchSlide(3)" id="tab-slide-3" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900">
-                Slide 3: 16-Bit Bus Bottleneck
+            <button onclick="switchSlide(3)" id="tab-slide-3" class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                Slide 3: 16-Bit Transfer
+            </button>
+            <button onclick="switchSlide(4)" id="tab-slide-4" class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                Slide 4: Von Neumann vs Harvard
+            </button>
+            <button onclick="switchSlide(5)" id="tab-slide-5" class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                Slide 5: RISC vs CISC
+            </button>
+            <button onclick="switchSlide(6)" id="tab-slide-6" class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                Slide 6: Performance & Peripherals
             </button>
         </div>
     </header>
@@ -675,11 +684,315 @@
 
                     <!-- Step Log Explanation -->
                     <div class="mt-6 p-3 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 flex items-center justify-between">
-                        <span id="sim16-status">Click "Simulate 2-Cycle Transfer" to watch the byte split procedure.</span>
+                        <span id="sim16-status">Click "Simulate 2-Cycle Transfer" to begin.</span>
                         <span id="sim16-clock-count" class="text-slate-500">Cycles Elapsed: 0</span>
                     </div>
 
                 </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SLIDE 4: ARCHITECTURE (VON NEUMANN VS HARVARD) [NEW] -->
+    <main id="slide-4" class="slide-content flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 hidden">
+        
+        <!-- Interactive Architecture Comparator -->
+        <section class="lg:col-span-12 flex flex-col gap-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-2xl space-y-5">
+                <div class="border-b border-slate-800 pb-3 flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                        <h2 class="font-semibold text-slate-200 text-base flex items-center gap-2">
+                            <i data-lucide="cpu" class="w-5 h-5 text-cyan-400"></i>
+                            Microcontroller Architecture: Von Neumann vs. Harvard Architecture
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            How memory organization affects memory access, instruction width, and overall execution speed.
+                        </p>
+                    </div>
+                    <span class="text-xs font-mono px-3 py-1 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
+                        Fig. 1.5 & Fig. 1.6
+                    </span>
+                </div>
+
+                <!-- 2-Column Comparison Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Von Neumann Box -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
+                                <h3 class="font-bold text-amber-400 text-sm flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                                    Von Neumann Architecture (Фиг. 1.5)
+                                </h3>
+                                <span class="text-[10px] font-mono text-slate-500">Shared Bus & Memory</span>
+                            </div>
+                            
+                            <!-- Visual Block Diagram Fig. 1.5 -->
+                            <div class="bg-slate-900 p-4 rounded-lg border border-slate-800 flex items-center justify-around my-4 min-h-[140px]">
+                                <div class="px-4 py-3 bg-slate-950 border border-amber-500/50 rounded-lg text-center">
+                                    <span class="text-xs font-bold text-amber-300 block">Central</span>
+                                    <span class="text-xs font-bold text-amber-300 block">Processor</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] font-mono text-amber-400 font-bold mb-1">8-bit Bus</span>
+                                    <div class="w-16 h-1 bg-amber-500 relative flex items-center justify-center">
+                                        <div class="w-3 h-3 bg-amber-400 rounded-full animate-ping"></div>
+                                    </div>
+                                    <span class="text-[9px] text-slate-500 mt-1">Single Highway</span>
+                                </div>
+                                <div class="px-4 py-2 bg-slate-950 border border-amber-500/50 rounded-lg text-center">
+                                    <span class="text-xs font-bold text-slate-200 block">Program &amp;</span>
+                                    <span class="text-xs font-bold text-slate-200 block">Data Memory</span>
+                                </div>
+                            </div>
+
+                            <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+                                <li><strong>Unified Memory:</strong> Program code (instructions) and data reside in the exact same memory space.</li>
+                                <li><strong>Single 8-bit Bus:</strong> Instructions and data are fetched sequentially over one shared data bus.</li>
+                                <li><strong>Multi-cycle Bottleneck:</strong> Instructions larger than 8 bits require 2 or more fetch cycles, reducing overall processing speed.</li>
+                                <li><strong>Examples:</strong> Intel and Motorola microcontrollers.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Harvard Architecture Box -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
+                                <h3 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                    Harvard Architecture (Фиг. 1.6)
+                                </h3>
+                                <span class="text-[10px] font-mono text-slate-500">Separate Buses & Memories</span>
+                            </div>
+
+                            <!-- Visual Block Diagram Fig. 1.6 -->
+                            <div class="bg-slate-900 p-4 rounded-lg border border-slate-800 flex items-center justify-between my-4 min-h-[140px] gap-2">
+                                <div class="px-3 py-2 bg-slate-950 border border-emerald-500/50 rounded-lg text-center shrink-0">
+                                    <span class="text-[11px] font-bold text-slate-200 block">Program</span>
+                                    <span class="text-[11px] font-bold text-slate-200 block">Memory</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] font-mono text-emerald-400 font-bold">12/14/16 bit</span>
+                                    <div class="w-10 h-1 bg-emerald-500"></div>
+                                </div>
+                                <div class="px-3 py-3 bg-slate-950 border border-emerald-500/50 rounded-lg text-center shrink-0">
+                                    <span class="text-[11px] font-bold text-emerald-300 block">Central</span>
+                                    <span class="text-[11px] font-bold text-emerald-300 block">Processor</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] font-mono text-orange-400 font-bold">8 bit</span>
+                                    <div class="w-10 h-1 bg-orange-500"></div>
+                                </div>
+                                <div class="px-3 py-2 bg-slate-950 border border-emerald-500/50 rounded-lg text-center shrink-0">
+                                    <span class="text-[11px] font-bold text-slate-200 block">Data</span>
+                                    <span class="text-[11px] font-bold text-slate-200 block">Memory</span>
+                                </div>
+                            </div>
+
+                            <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+                                <li><strong>Physically Separate Memories:</strong> Independent Flash Program Memory and Data RAM.</li>
+                                <li><strong>Separate Dedicated Buses:</strong> CPU can read data and fetch the next instruction simultaneously!</li>
+                                <li><strong>Flexible Instruction Width:</strong> Instructions can be wider than data (e.g., 12, 14, or 16 bits in PIC microcontrollers).</li>
+                                <li><strong>Single-word Fetch:</strong> Each instruction is fetched in one binary word, drastically boosting execution speed.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Theory Summary Box -->
+                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-400 flex items-start gap-3">
+                    <i data-lucide="zap" class="w-5 h-5 text-yellow-400 shrink-0 mt-0.5"></i>
+                    <div>
+                        <strong class="text-slate-200">Key Advantage of Harvard Architecture:</strong> By decoupling the instruction memory from the data memory, instructions can be fetched in parallel with data access. This eliminated the classic Von Neumann bus bottleneck and paved the way for modern high-speed microcontrollers like the Microchip PIC series.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SLIDE 5: RISC VS CISC INSTRUCTION SETS [NEW] -->
+    <main id="slide-5" class="slide-content flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 hidden">
+        
+        <section class="lg:col-span-12 flex flex-col gap-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-2xl space-y-5">
+                <div class="border-b border-slate-800 pb-3 flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                        <h2 class="font-semibold text-slate-200 text-base flex items-center gap-2">
+                            <i data-lucide="code" class="w-5 h-5 text-cyan-400"></i>
+                            Instruction Set Paradigms: RISC vs. CISC Microcontrollers
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Comparing Reduced Instruction Set Computers (RISC) with Complex Instruction Set Computers (CISC).
+                        </p>
+                    </div>
+                    <span class="text-xs font-mono px-3 py-1 rounded bg-purple-950 text-purple-400 border border-purple-800">
+                        Instruction Set Architecture (ISA)
+                    </span>
+                </div>
+
+                <!-- RISC vs CISC Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- RISC Card -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <h3 class="font-bold text-cyan-400 text-base">RISC Architecture</h3>
+                                <p class="text-[11px] text-slate-400">Reduced Instruction Set Computer</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded text-xs font-mono bg-cyan-950 text-cyan-300 border border-cyan-800">~35 Instructions</span>
+                        </div>
+
+                        <ul class="text-xs text-slate-300 space-y-2.5">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                                <span><strong>Small, Optimized Instruction Set:</strong> Works with a reduced number of basic, highly efficient instructions (e.g., 35 instructions in PIC16CXX/PIC16FXXX).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                                <span><strong>Easy to Memorize:</strong> Developers only need to master a small set of operational codes.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                                <span><strong>Instruction Decomposition:</strong> Complex operations are executed by combining 2 or more basic instructions instead of single complex ones.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- CISC Card -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <h3 class="font-bold text-purple-400 text-base">CISC Architecture</h3>
+                                <p class="text-[11px] text-slate-400">Complex Instruction Set Computer</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded text-xs font-mono bg-purple-950 text-purple-300 border border-purple-800">100+ Instructions</span>
+                        </div>
+
+                        <ul class="text-xs text-slate-300 space-y-2.5">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-purple-400 shrink-0 mt-0.5"></i>
+                                <span><strong>Large, Expanded Instruction Set:</strong> Provides over 100 specialized instructions (e.g., Intel, Motorola microcontrollers).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-purple-400 shrink-0 mt-0.5"></i>
+                                <span><strong>Single-Instruction Operations:</strong> Complex tasks can often be accomplished in a single opcode instruction.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check" class="w-4 h-4 text-purple-400 shrink-0 mt-0.5"></i>
+                                <span><strong>Hardware Complexity:</strong> Larger instruction decoding logic inside the CPU hardware.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- Common Misconception Clarification Card -->
+                <div class="p-4 bg-slate-950 border border-amber-900/40 rounded-xl text-xs space-y-2">
+                    <h4 class="font-bold text-amber-400 flex items-center gap-2 text-sm">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+                        Common Misconception Debunked: Does RISC Limit Functionality?
+                    </h4>
+                    <p class="text-slate-300 leading-relaxed">
+                        A common misconception is that a smaller instruction set limits what a microcontroller can do. <strong>This is false!</strong> Anything a 100-instruction CISC microcontroller can perform can also be achieved by a 35-instruction RISC microcontroller. The only difference is that operations requiring 1 CISC instruction might take 2 or more instructions on a RISC core.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SLIDE 6: PERFORMANCE vs EXECUTION SPEED & PERIPHERALS [NEW] -->
+    <main id="slide-6" class="slide-content flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 hidden">
+        
+        <!-- LEFT COLUMN: CPU Performance vs Execution Speed (6 cols) -->
+        <section class="lg:col-span-6 flex flex-col gap-5">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-5">
+                <div class="border-b border-slate-800 pb-3">
+                    <h2 class="font-semibold text-slate-200 flex items-center gap-2 text-sm">
+                        <i data-lucide="gauge" class="w-5 h-5 text-cyan-400"></i>
+                        Performance (Производителност) vs. Execution Speed (Бързодействие)
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Although often used interchangeably, these two metrics evaluate different aspects of efficiency.
+                    </p>
+                </div>
+
+                <div class="space-y-4 text-xs">
+                    <!-- Performance Card -->
+                    <div class="p-3.5 bg-slate-950 border border-blue-900/40 rounded-lg space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-blue-400">1. CPU Performance (Производителност)</h3>
+                            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 font-mono text-[10px]">MIPS Unit</span>
+                        </div>
+                        <p class="text-slate-300 leading-relaxed">
+                            A characteristic specifically of the <strong>CPU core</strong>. Measured by the number of raw instructions executed per unit time, usually given in <strong>MIPS (Million Instructions Per Second)</strong>. PIC microcontrollers achieve up to <strong>10 MIPS</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Execution Speed Card -->
+                    <div class="p-3.5 bg-slate-950 border border-emerald-900/40 rounded-lg space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-emerald-400">2. System Execution Speed (Бързодействие)</h3>
+                            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-mono text-[10px]">Overall System</span>
+                        </div>
+                        <p class="text-slate-300 leading-relaxed">
+                            Evaluates the <strong>overall operational capacity</strong> of the entire microcontroller system to complete concrete tasks. It depends not only on CPU MIPS, but also on memory access time, architecture type (e.g. Harvard), and peripheral effectiveness.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-cyan-950/30 border border-cyan-800/40 rounded-lg text-xs text-cyan-300">
+                    <strong>Rule:</strong> High CPU performance (MIPS) does not always guarantee high system execution speed if memory or peripherals create bottleneck stalls.
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Peripherals Overview & Analogy (6 cols) -->
+        <section class="lg:col-span-6 flex flex-col gap-5">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+                <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+                    <h2 class="font-semibold text-slate-200 flex items-center gap-2 text-sm">
+                        <i data-lucide="plug" class="w-5 h-5 text-orange-400"></i>
+                        Microcontroller Peripherals (Периферни устройства)
+                    </h2>
+                </div>
+
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Peripherals are functional hardware blocks inside the microcontroller that extend its capabilities. While a core MCU could run without them, interacting with the real world would be nearly impossible.
+                </p>
+
+                <!-- PC Analogy Card -->
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-lg text-xs space-y-1.5">
+                    <h4 class="font-bold text-amber-400 flex items-center gap-1.5">
+                        <i data-lucide="monitor" class="w-4 h-4"></i> PC Analogy
+                    </h4>
+                    <p class="text-slate-400 leading-relaxed">
+                        Just as a Personal Computer needs a monitor and keyboard to communicate with a user, a microcontroller relies on I/O ports and peripherals to interface with external sensors and actuators.
+                    </p>
+                </div>
+
+                <!-- Peripherals Grid -->
+                <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                    <div class="p-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200">
+                        <span class="text-emerald-400 font-bold block mb-0.5">✓ Always Present</span>
+                        • I/O Ports (GPIO)<br>• Timers / Counters
+                    </div>
+                    <div class="p-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200">
+                        <span class="text-cyan-400 font-bold block mb-0.5">Optional Modules</span>
+                        • ADC / DAC<br>• Serial (UART, SPI, I2C)
+                    </div>
+                </div>
+
+                <p class="text-[11px] text-slate-400 italic">
+                    Note: Premium microcontrollers include richer peripheral sets, opening up complex real-time applications.
+                </p>
             </div>
         </section>
 
@@ -692,17 +1005,19 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Slide Switcher Navigation Logic
+        // Slide Switcher Navigation Logic (Supports Slides 1 through 6)
         function switchSlide(slideNum) {
             document.querySelectorAll('.slide-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`slide-${slideNum}`).classList.remove('hidden');
 
-            [1, 2, 3].forEach(n => {
+            [1, 2, 3, 4, 5, 6].forEach(n => {
                 const btn = document.getElementById(`tab-slide-${n}`);
-                if (n === slideNum) {
-                    btn.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-cyan-600 text-white shadow";
-                } else {
-                    btn.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900";
+                if (btn) {
+                    if (n === slideNum) {
+                        btn.className = "px-2.5 py-1 rounded-md text-xs font-semibold transition-all bg-cyan-600 text-white shadow";
+                    } else {
+                        btn.className = "px-2.5 py-1 rounded-md text-xs font-semibold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-900";
+                    }
                 }
             });
         }
