@@ -92,192 +92,317 @@
     <!-- Main Content Area -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
 
-        <!-- ================= TAB 1: ORIGINAL BUS & MEMORY INTERCONNECT ================= -->
-        <div id="tab-1" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- LEFT COLUMN: Control Panel (4 cols) -->
-            <section class="lg:col-span-4 flex flex-col gap-5">
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                        <h2 class="font-semibold text-slate-200 flex items-center gap-2">
-                            <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
-                            Execution Controller
-                        </h2>
-                        <span id="cycle-badge" class="text-xs px-2 py-0.5 rounded-full font-mono bg-slate-800 text-slate-400 border border-slate-700">IDLE</span>
+<!-- SLIDE 1: INITIAL TEMPLATE (TRANSLATED TO ENGLISH) -->
+    <main id="slide-1" class="slide-content flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- LEFT COLUMN: Control Panel & Interactive Controls (4 cols) -->
+        <section class="lg:col-span-4 flex flex-col gap-5">
+            
+            <!-- Control Panel Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <h2 class="font-semibold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+                        Execution Controller
+                    </h2>
+                    <span id="cycle-badge" class="text-xs px-2 py-0.5 rounded-full font-mono bg-slate-800 text-slate-400 border border-slate-700">
+                        IDLE
+                    </span>
+                </div>
+
+                <!-- Form Controls -->
+                <div class="space-y-4">
+                    <!-- Target Address Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
+                            <span>Target Address</span>
+                            <span class="text-blue-400 font-mono" id="selected-hex-display">0x02</span>
+                        </label>
+                        <div class="grid grid-cols-4 gap-2 font-mono text-xs">
+                            <select id="address-select" class="col-span-4 bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                <!-- Generated JS options -->
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="space-y-4">
-                        <!-- Address Selector -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
-                                <span>Target Address (Адрес)</span>
-                                <span class="text-blue-400 font-mono" id="selected-hex-display">0x02</span>
-                            </label>
-                            <select id="address-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500 font-mono text-xs"></select>
-                        </div>
-
-                        <!-- Mode Toggle -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Operation Mode (R/W)</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button id="btn-mode-read" onclick="setMode('READ')" class="flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm bg-emerald-950/40 border-emerald-600/60 text-emerald-300">
-                                    <i data-lucide="arrow-down-left" class="w-4 h-4"></i> READ (R/W=1)
-                                </button>
-                                <button id="btn-mode-write" onclick="setMode('WRITE')" class="flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm bg-slate-950 border-slate-800 text-slate-400">
-                                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i> WRITE (R/W=0)
-                                </button>
-                            </div>
-                            <p class="text-[11px] text-slate-400 mt-1.5 font-mono">
-                                <span id="rw-desc" class="text-emerald-400">R/W=1: Memory → CPU (Четене)</span>
-                            </p>
-                        </div>
-
-                        <!-- Write Input -->
-                        <div id="write-data-container" class="opacity-40 pointer-events-none transition-all">
-                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
-                                <span>Data to Write</span>
-                                <span id="data-preview" class="text-orange-400 font-mono">0xA5</span>
-                            </label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <span class="text-[10px] text-slate-500 font-mono uppercase">HEX</span>
-                                    <input type="text" id="hex-input" maxlength="2" value="A5" oninput="handleHexInput(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono text-sm uppercase">
-                                </div>
-                                <div>
-                                    <span class="text-[10px] text-slate-500 font-mono uppercase">Binary</span>
-                                    <input type="text" id="bin-input" maxlength="8" value="10100101" oninput="handleBinInput(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono text-sm">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="pt-2 flex flex-col gap-2">
-                            <button id="btn-execute" onclick="runFullCycle()" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-lg shadow-lg flex items-center justify-center gap-2">
-                                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Execute Cycle
+                    <!-- Operation Mode Toggle (R/W) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                            Operation Mode (R/W Signal)
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btn-mode-read" onclick="setMode('READ')" 
+                                class="flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm transition-all bg-emerald-950/40 border-emerald-600/60 text-emerald-300 shadow-lg shadow-emerald-950/50">
+                                <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+                                READ (R/W=1)
                             </button>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="nextStep()" class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg border border-slate-700 text-xs flex items-center justify-center gap-1.5">
-                                    <i data-lucide="step-forward" class="w-3.5 h-3.5"></i> Step-by-Step
-                                </button>
-                                <button onclick="resetCycle()" class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg border border-slate-700 text-xs flex items-center justify-center gap-1.5">
-                                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
-                                </button>
+                            <button id="btn-mode-write" onclick="setMode('WRITE')" 
+                                class="flex items-center justify-center gap-2 p-2.5 rounded-lg border font-medium text-sm transition-all bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700">
+                                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                                WRITE (R/W=0)
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1.5 font-mono">
+                            <span id="rw-desc" class="text-emerald-400">R/W=1: Data flows Memory → CPU (Read)</span>
+                        </p>
+                    </div>
+
+                    <!-- Write Data Input (Active only in WRITE mode) -->
+                    <div id="write-data-container" class="opacity-40 pointer-events-none transition-all">
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
+                            <span>Data to Write</span>
+                            <span id="data-preview" class="text-orange-400 font-mono">0xA5 (10100101)</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase font-mono">HEX Value</span>
+                                <input type="text" id="hex-input" maxlength="2" value="A5" oninput="handleHexInput(this.value)"
+                                    class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono text-sm focus:outline-none focus:border-orange-500 uppercase">
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase font-mono">8-bit Binary</span>
+                                <input type="text" id="bin-input" maxlength="8" value="10100101" oninput="handleBinInput(this.value)"
+                                    class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono text-sm focus:outline-none focus:border-orange-500">
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
-                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i> Signal Monitor
-                    </h3>
-                    <div class="space-y-2.5 font-mono text-xs">
-                        <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-blue-900/40">
-                            <span class="text-blue-400">Address Bus</span>
-                            <span id="dash-address" class="text-slate-200 font-bold">0x02</span>
-                        </div>
-                        <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-emerald-900/40">
-                            <span class="text-emerald-400">Control R/W</span>
-                            <span id="dash-rw" class="text-emerald-300 font-bold">1 (READ)</span>
-                        </div>
-                        <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-orange-900/40">
-                            <span class="text-orange-400">Data Bus</span>
-                            <span id="dash-data" class="text-slate-200 font-bold">0x42</span>
+                    <!-- Action Buttons -->
+                    <div class="pt-2 flex flex-col gap-2">
+                        <button id="btn-execute" onclick="runFullCycle()" 
+                            class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-lg shadow-lg shadow-cyan-950/50 flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                            Execute Bus Cycle (Auto)
+                        </button>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="btn-step" onclick="nextStep()" 
+                                class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg border border-slate-700 text-xs flex items-center justify-center gap-1.5 transition-all">
+                                <i data-lucide="step-forward" class="w-3.5 h-3.5"></i>
+                                Step-by-Step
+                            </button>
+                            <button id="btn-reset" onclick="resetCycle()" 
+                                class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg border border-slate-700 text-xs flex items-center justify-center gap-1.5 transition-all">
+                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                Reset State
+                            </button>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- RIGHT COLUMN: Bus Interconnect Diagram (8 cols) -->
-            <section class="lg:col-span-8 flex flex-col gap-6">
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                            <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i> Hardware Interconnect Diagram (Фиг. 1.3)
+            <!-- Real-time Bus Status Dashboard -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+                    Bus Signal Monitor
+                </h3>
+                <div class="space-y-2.5 font-mono text-xs">
+                    <!-- Address Bus Line -->
+                    <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-blue-900/40">
+                        <span class="text-blue-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                            Address Bus
                         </span>
-                        <span class="text-xs text-slate-500 font-mono">16 Cells (0x00 - 0x0F)</span>
+                        <span id="dash-address" class="text-slate-200 font-bold">0x02 (00000010)</span>
                     </div>
 
-                    <div class="relative w-full min-h-[380px] bg-slate-950 border border-slate-800 rounded-xl p-4 flex justify-between items-center gap-2 overflow-x-auto">
-                        <!-- CPU BOX -->
-                        <div id="cpu-box" class="w-44 flex-shrink-0 bg-slate-900 border-2 border-slate-700 rounded-xl p-3 flex flex-col justify-between h-[320px] shadow-lg">
-                            <div class="border-b border-slate-800 pb-2 text-center">
-                                <span class="text-xs font-bold text-slate-200 block uppercase">Централен</span>
-                                <span class="text-xs font-bold text-cyan-400 block uppercase">Процесор (CPU)</span>
-                            </div>
-                            <div class="space-y-2 text-[11px] font-mono">
-                                <div class="bg-slate-950 p-2 rounded border border-slate-800">
-                                    <span class="text-slate-500 block text-[9px]">ADDRESS REG (MAR)</span>
-                                    <span id="cpu-mar" class="text-blue-400 font-bold">0x02</span>
-                                </div>
-                                <div class="bg-slate-950 p-2 rounded border border-slate-800">
-                                    <span class="text-slate-500 block text-[9px]">DATA REG (MDR)</span>
-                                    <span id="cpu-mdr" class="text-orange-400 font-bold">0x00</span>
-                                </div>
-                                <div class="bg-slate-950 p-1.5 rounded border border-slate-800 flex justify-between items-center">
-                                    <span class="text-slate-500 text-[9px]">R/W BUFFER</span>
-                                    <span id="cpu-rw-flag" class="text-emerald-400 font-bold">1</span>
-                                </div>
-                            </div>
-                            <div class="text-[10px] text-slate-500 text-center border-t border-slate-800 pt-1.5">Control Logic</div>
-                        </div>
-
-                        <!-- BUS SVG OVERLAY -->
-                        <div class="flex-1 min-w-[200px] h-[320px] relative">
-                            <svg class="w-full h-full overflow-visible">
-                                <defs>
-                                    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6"/>
-                                    </marker>
-                                    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
-                                    </marker>
-                                </defs>
-                                <!-- DATA BUS -->
-                                <g>
-                                    <line x1="0" y1="80" x2="100%" y2="80" stroke="#475569" stroke-width="8" stroke-linecap="round"/>
-                                    <line id="line-data-active" x1="0" y1="80" x2="100%" y2="80" stroke="#f97316" stroke-width="4" stroke-dasharray="8 6" class="opacity-40"/>
-                                    <text x="50%" y="65" fill="#f97316" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">Data Bus (8 bit)</text>
-                                </g>
-                                <!-- ADDRESS BUS -->
-                                <g>
-                                    <line x1="0" y1="160" x2="98%" y2="160" stroke="#475569" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow-blue)"/>
-                                    <line id="line-address-active" x1="0" y1="160" x2="98%" y2="160" stroke="#3b82f6" stroke-width="4" stroke-dasharray="8 6" class="opacity-40"/>
-                                    <text x="50%" y="145" fill="#3b82f6" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">Address Bus (4 bit)</text>
-                                </g>
-                                <!-- CONTROL BUS -->
-                                <g>
-                                    <line x1="0" y1="240" x2="98%" y2="240" stroke="#475569" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-emerald)"/>
-                                    <line id="line-control-active" x1="0" y1="240" x2="98%" y2="240" stroke="#10b981" stroke-width="2" stroke-dasharray="6 4" class="opacity-40"/>
-                                    <text x="50%" y="225" fill="#10b981" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">R/W Line</text>
-                                </g>
-                            </svg>
-                        </div>
-
-                        <!-- MEMORY BOX -->
-                        <div id="ram-box" class="w-56 flex-shrink-0 bg-slate-900 border-2 border-slate-700 rounded-xl p-3 flex flex-col h-[320px] shadow-lg">
-                            <div class="border-b border-slate-800 pb-2 text-center mb-2">
-                                <span class="text-xs font-bold text-slate-200 block uppercase">Памет</span>
-                                <span class="text-xs font-bold text-emerald-400 block uppercase">(Memory Cells)</span>
-                            </div>
-                            <div id="memory-cells-container" class="flex-1 overflow-y-auto space-y-1.5 pr-1 font-mono text-xs"></div>
-                        </div>
+                    <!-- Control Signal Line -->
+                    <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-emerald-900/40">
+                        <span class="text-emerald-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Control R/W
+                        </span>
+                        <span id="dash-rw" class="text-emerald-300 font-bold">1 (READ Mode)</span>
                     </div>
 
-                    <!-- Step Explanation Banner -->
-                    <div class="mt-4 bg-slate-950 border border-slate-800 rounded-lg p-3.5 flex items-start gap-3">
-                        <div id="step-icon-container" class="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 mt-0.5">
-                            <i data-lucide="info" class="w-5 h-5"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-center mb-1">
-                                <h4 id="step-title" class="text-sm font-bold text-slate-200">Step 0: System Idle</h4>
-                                <span id="step-count" class="text-[11px] font-mono text-slate-400">Step 0 / 4</span>
-                            </div>
-                            <p id="step-description" class="text-xs text-slate-400 leading-relaxed">Select address & mode, then trigger a cycle.</p>
-                        </div>
+                    <!-- Data Bus Line -->
+                    <div class="flex justify-between items-center p-2 rounded bg-slate-950 border border-orange-900/40">
+                        <span class="text-orange-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                            Data Bus
+                        </span>
+                        <span id="dash-data" class="text-slate-200 font-bold">0x42 (01000010)</span>
                     </div>
                 </div>
-            </section>
-        </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: Visual Simulation Canvas & Textbooks Reference (8 cols) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- VISUAL ARCHITECTURE INTERACTIVE DIAGRAM -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+                
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+                        Hardware Interconnect Diagram (Fig. 1.3)
+                    </span>
+                    <span class="text-xs text-slate-500 font-mono">16-Cell Address Space (0x00 - 0x0F)</span>
+                </div>
+
+                <!-- Simulation Interactive Workspace -->
+                <div class="relative w-full min-h-[380px] bg-slate-950 border border-slate-800 rounded-xl p-4 flex justify-between items-center gap-2 overflow-x-auto">
+                    
+                    <!-- 1. CENTRAL PROCESSOR (CPU) BOX -->
+                    <div id="cpu-box" class="w-44 flex-shrink-0 bg-slate-900 border-2 border-slate-700 rounded-xl p-3 flex flex-col justify-between h-[320px] transition-all relative z-10 shadow-lg">
+                        <div class="border-b border-slate-800 pb-2 text-center">
+                            <span class="text-xs font-bold tracking-wider text-slate-200 block uppercase">Central</span>
+                            <span class="text-xs font-bold tracking-wider text-cyan-400 block uppercase">Processor (CPU)</span>
+                        </div>
+
+                        <!-- Internal Registers View -->
+                        <div class="space-y-2 text-[11px] font-mono">
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <span class="text-slate-500 block text-[9px]">ADDRESS REG (MAR)</span>
+                                <span id="cpu-mar" class="text-blue-400 font-bold">0x02</span>
+                            </div>
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <span class="text-slate-500 block text-[9px]">DATA REG (MDR)</span>
+                                <span id="cpu-mdr" class="text-orange-400 font-bold">0x00</span>
+                            </div>
+                            <div class="bg-slate-950 p-1.5 rounded border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-500 text-[9px]">R/W BUFFER</span>
+                                <span id="cpu-rw-flag" class="text-emerald-400 font-bold">1</span>
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] text-slate-500 text-center border-t border-slate-800 pt-1.5">
+                            Control & Arithmetic Logic
+                        </div>
+                    </div>
+
+                    <!-- 2. BUS INTERCONNECT SVG ANIMATION OVERLAY -->
+                    <div class="flex-1 min-w-[200px] h-[320px] relative">
+                        <svg class="w-full h-full overflow-visible" id="bus-svg">
+                            <!-- Defs for arrowheads and gradients -->
+                            <defs>
+                                <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6"/>
+                                </marker>
+                                <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+                                </marker>
+                                <marker id="arrow-orange-right" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#f97316"/>
+                                </marker>
+                                <marker id="arrow-orange-left" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 10 0 L 0 5 L 10 10 z" fill="#f97316"/>
+                                </marker>
+                            </defs>
+
+                            <!-- DATA BUS (Top) - Bidirectional -->
+                            <g id="group-data-bus">
+                                <line x1="0" y1="80" x2="100%" y2="80" stroke="#475569" stroke-width="8" stroke-linecap="round" />
+                                <line id="line-data-active" x1="0" y1="80" x2="100%" y2="80" stroke="#f97316" stroke-width="4" stroke-dasharray="8 6" class="opacity-40" />
+                                <text x="50%" y="65" fill="#f97316" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">
+                                    Data Bus (8-bit)
+                                </text>
+                            </g>
+
+                            <!-- ADDRESS BUS (Middle) - Unidirectional CPU -> RAM -->
+                            <g id="group-address-bus">
+                                <line x1="0" y1="160" x2="98%" y2="160" stroke="#475569" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow-blue)" />
+                                <line id="line-address-active" x1="0" y1="160" x2="98%" y2="160" stroke="#3b82f6" stroke-width="4" stroke-dasharray="8 6" class="opacity-40" />
+                                <text x="50%" y="145" fill="#3b82f6" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">
+                                    Address Bus (One Way)
+                                </text>
+                            </g>
+
+                            <!-- CONTROL LINE R/W (Bottom) - Single Line CPU -> RAM -->
+                            <g id="group-control-bus">
+                                <line x1="0" y1="240" x2="98%" y2="240" stroke="#475569" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow-emerald)" />
+                                <line id="line-control-active" x1="0" y1="240" x2="98%" y2="240" stroke="#10b981" stroke-width="2" stroke-dasharray="6 4" class="opacity-40" />
+                                <text x="50%" y="225" fill="#10b981" font-size="11" font-family="Fira Code" text-anchor="middle" font-weight="bold">
+                                    R/W Control Line
+                                </text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- 3. MEMORY MODULE (RAM) BOX -->
+                    <div id="ram-box" class="w-56 flex-shrink-0 bg-slate-900 border-2 border-slate-700 rounded-xl p-3 flex flex-col h-[320px] transition-all relative z-10 shadow-lg">
+                        <div class="border-b border-slate-800 pb-2 text-center mb-2">
+                            <span class="text-xs font-bold tracking-wider text-slate-200 block uppercase">Memory</span>
+                            <span class="text-xs font-bold tracking-wider text-emerald-400 block uppercase">(Memory Cells)</span>
+                        </div>
+
+                        <!-- Scrollable Memory Cells -->
+                        <div id="memory-cells-container" class="flex-1 overflow-y-auto space-y-1.5 pr-1 font-mono text-xs">
+                            <!-- Memory cells inserted by JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Step Explanation Banner -->
+                <div class="mt-4 bg-slate-950 border border-slate-800 rounded-lg p-3.5 flex items-start gap-3">
+                    <div id="step-icon-container" class="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 mt-0.5">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 id="step-title" class="text-sm font-bold text-slate-200">Step 0: Ready to Initiate Cycle</h4>
+                            <span id="step-count" class="text-[11px] font-mono text-slate-400">Step 0 / 4</span>
+                        </div>
+                        <p id="step-description" class="text-xs text-slate-400 leading-relaxed">
+                            Select a target address (0x00 to 0x0F) and mode (READ or WRITE), then click <span class="text-cyan-400 font-semibold">Execute</span> or <span class="text-slate-200 font-semibold">Step-by-Step</span> to observe the data transfer protocol between CPU and RAM.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ACADEMIC THEORY & TEXTBOOK EXPLANATION CARD -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+                <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+                    <i data-lucide="book-open" class="w-4 h-4 text-cyan-400"></i>
+                    Theoretical Foundations
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <!-- Address Bus Theory -->
+                    <div class="p-3 bg-slate-950/60 rounded-lg border border-blue-900/30">
+                        <h4 class="font-bold text-blue-400 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                            Address Bus
+                        </h4>
+                        <p class="text-slate-400 leading-relaxed">
+                            <strong>Unidirectional:</strong> Sends the address binary word from the CPU to memory. Determines which specific cell (0x00 to 0x0F) will be accessed.
+                        </p>
+                    </div>
+
+                    <!-- Control Signal Theory -->
+                    <div class="p-3 bg-slate-950/60 rounded-lg border border-emerald-900/30">
+                        <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            R/W Control Signal
+                        </h4>
+                        <p class="text-slate-400 leading-relaxed">
+                            <strong>Single Line Connection:</strong>
+                            <br>• <strong>R/W = 1 (High):</strong> Read Operation
+                            <br>• <strong>R/W = 0 (Low):</strong> Write Operation
+                        </p>
+                    </div>
+
+                    <!-- Data Bus Theory -->
+                    <div class="p-3 bg-slate-950/60 rounded-lg border border-orange-900/30">
+                        <h4 class="font-bold text-orange-400 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                            Data Bus
+                        </h4>
+                        <p class="text-slate-400 leading-relaxed">
+                            <strong>Bidirectional:</strong> Transfers the byte of data from memory to CPU (during Read) or CPU to memory (during Write).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
 
         <!-- ================= TAB 2: CAPACITY CALCULATOR & HIGHWAY ANALOGY ================= -->
         <div id="tab-2" class="hidden grid-cols-1 lg:grid-cols-12 gap-6">
